@@ -8,12 +8,14 @@ package playmusic;
 import java.awt.Image;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -22,6 +24,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class MP3Player extends javax.swing.JFrame {
 
     MainClass MC = new MainClass();
+    ArrayList<Model.Reserves> listMusic;
+    DefaultTableModel model;
     /**
      * Creates new form MP3Player
      */
@@ -30,8 +34,15 @@ public class MP3Player extends javax.swing.JFrame {
     
     public static int statusOfPlayMusicBtn = 0;
     
+    public static int selectedIndex = 0;
+    
     public MP3Player() {
         initComponents();
+        listMusic = new ArrayList<Model.Reserves>();
+        MC.connectDB(listMusic);
+        model = (DefaultTableModel) table.getModel();
+        display();
+        musicLbl.setText(listMusic.get(0).getMusicName());
     }
 
     /**
@@ -52,8 +63,11 @@ public class MP3Player extends javax.swing.JFrame {
         moreBtn = new javax.swing.JButton();
         playBtn = new javax.swing.JButton();
         repeatBtn = new javax.swing.JButton();
-        musicLbl = new javax.swing.JLabel();
         jp_progress = new playmusic.CustomPanel();
+        musicLbl = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
         jDialog1.getContentPane().setLayout(jDialog1Layout);
@@ -98,8 +112,6 @@ public class MP3Player extends javax.swing.JFrame {
             }
         });
 
-        musicLbl.setText("jLabel1");
-
         jp_progress.setBackground(new java.awt.Color(255, 204, 255));
 
         javax.swing.GroupLayout jp_progressLayout = new javax.swing.GroupLayout(jp_progress);
@@ -113,6 +125,9 @@ public class MP3Player extends javax.swing.JFrame {
             .addGap(0, 254, Short.MAX_VALUE)
         );
 
+        musicLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        musicLbl.setText("jLabel2");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -120,8 +135,8 @@ public class MP3Player extends javax.swing.JFrame {
             .addComponent(jp_progress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(50, 50, 50)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(musicLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 302, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(musicLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(repeatBtn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(98, 98, 98)
@@ -134,9 +149,9 @@ public class MP3Player extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jp_progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
                 .addComponent(musicLbl)
-                .addGap(29, 29, 29)
+                .addGap(41, 41, 41)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(playBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(moreBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -144,17 +159,44 @@ public class MP3Player extends javax.swing.JFrame {
                 .addGap(30, 30, 30))
         );
 
+        table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Bài hát ", "Ca sỹ"
+            }
+        ));
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(table);
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Danh sách bài hát");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 283, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane1)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
         );
 
         pack();
@@ -176,21 +218,8 @@ public class MP3Player extends javax.swing.JFrame {
         // TODO add your handling code here:
         switch (statusOfPlayMusicBtn) {
             case 0:
-                MC.Play("/Users/admin/Desktop/Java/PlayMusic/src/music/BÍCH-PHƯƠNG-Bùa-Yêu-Official-M-V.mp3");
-//                new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            for (int num = 0; num <= MainClass.instance.songTotalLength; num++) {
-//                                try {
-//                                    jp_progress.updateProgress(num, MainClass.instance.songTotalLength);
-//                                    jp_progress.repaint();
-//                                    Thread.sleep(10);
-//                                } catch (InterruptedException ex) {
-//                                    Logger.getLogger(MP3Player.class.getName()).log(Level.SEVERE, null, ex);
-//                                }
-//                            }
-//                        }
-//                    }).start();
+                MC.duration = listMusic.get(selectedIndex).getDuration();
+                MC.Play("BÍCH-PHƯƠNG-Bùa-Yêu-Official-M-V.mp3");
                 try {
                     Image img = ImageIO.read(getClass().getResource("/images/pause-button.png"));
                     playBtn.setIcon(new ImageIcon(img));
@@ -242,6 +271,22 @@ public class MP3Player extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_moreBtnActionPerformed
 
+    private void tableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableMouseClicked
+        // TODO add your handling code here:
+        int index = table.getSelectedRow();
+        selectedIndex = index;
+        Model.Reserves r = listMusic.get(index);
+        musicLbl.setText(r.getMusicName());
+    }//GEN-LAST:event_tableMouseClicked
+
+    private void display() {
+        model.setRowCount(0);
+        for (Model.Reserves r: listMusic) {
+            model.addRow(new Object[]{
+                r.getMusicName(), r.getSingerName()
+            });
+        }
+    }
     /**
      * @param args the command line arguments
      */
@@ -282,12 +327,15 @@ public class MP3Player extends javax.swing.JFrame {
     private javax.swing.JColorChooser jColorChooser2;
     private javax.swing.JColorChooser jColorChooser3;
     private javax.swing.JDialog jDialog1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JOptionPane jOptionPane1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     public static playmusic.CustomPanel jp_progress;
     private javax.swing.JButton moreBtn;
     public static javax.swing.JLabel musicLbl;
     private javax.swing.JButton playBtn;
     private javax.swing.JButton repeatBtn;
+    private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 }

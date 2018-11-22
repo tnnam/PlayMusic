@@ -10,7 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.*;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javazoom.jl.decoder.JavaLayerException;
@@ -30,7 +30,7 @@ public class MainClass {
     public long songTotalLength;
     public String fileLocation; 
     public long duration = 0;
-    
+    public long pauseDuration = 0;
     // method
     public void Stop() {
         if (player != null) {
@@ -45,6 +45,8 @@ public class MainClass {
             try {
                 pauseLocaton = FIS.available();
                 player.close();
+                MP3Player.jp_progress.updateProgress((int) pauseDuration, duration);
+                MP3Player.jp_progress.repaint();
             } catch (IOException ex) {
             
             }
@@ -60,24 +62,7 @@ public class MainClass {
             player = new Player(BIS);
         
             songTotalLength = FIS.available();
-  
-        
-            FileInputStream fileInputStream = null;
 
-            try {
-                fileInputStream = new FileInputStream(path);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                duration = Objects.requireNonNull(fileInputStream).getChannel().size() / 128;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-          
-            System.out.println("==>" + duration);
-            System.out.println("==>" + songTotalLength);
             fileLocation = path + "";
             
         } catch (FileNotFoundException | JavaLayerException ex) {
@@ -96,25 +81,37 @@ public class MainClass {
                     if (player.isComplete()) {
                         MP3Player.musicLbl.setText(" ");
                     }
+                    for (int num = 0; num <= duration; num++) {
+                        try {
+                            pauseDuration = num;
+                            MP3Player.jp_progress.updateProgress(num, duration);
+                            MP3Player.jp_progress.repaint();
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+
                 } catch (JavaLayerException ex) {
 
                 }
             }
         }.start();
         
-        new Thread() {
-            public void run() {
-                for (int num = 0; num <= duration; num++) {
-                    try {
-                        MP3Player.jp_progress.updateProgress(num, duration);
-                        MP3Player.jp_progress.repaint();
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        }.start();
+//        new Thread() {
+//            public void run() {
+//                for (int num = 0; num <= duration; num++) {
+//                    try {
+//                        pauseDuration = num;
+//                        MP3Player.jp_progress.updateProgress(num, duration);
+//                        MP3Player.jp_progress.repaint();
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException ex) {
+//                        Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            }
+//        }.start();
 
     }
     
@@ -141,15 +138,49 @@ public class MainClass {
                 }
             }
         }.start();
+        
+//        new Thread() {
+//            public void run() {
+//                for (int num = 0; num <= duration; num++) {
+//                    try {
+//                        MP3Player.jp_progress.updateProgress(num, duration);
+//                        MP3Player.jp_progress.repaint();
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException ex) {
+//                        Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            }
+//        }.start();
+
     }
     
     public static void main(String[] args) {
         try {
             Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:8889/PlayMusic", "root", "root");
             Statement myStmt = myConn.createStatement();
-            ResultSet myRs = myStmt.executeQuery("select * from Sailors");
+            ResultSet myRs = myStmt.executeQuery("SELECT S.singerId, S.singerName, S.age, M.musicId, M.musicName, M.authorId, M.genreId, M.year, R.location "
+                    + "FROM SingerData S, MusicData M, Reserves R "
+                    + "WHERE S.singerId = R.singerId AND M.musicId = R.musicId");
             while(myRs.next()) {
-                System.out.println(myRs.getString("sname") + ", " + myRs.getString("rating"));
+                System.out.println(myRs.getString("singerId") + ", " + myRs.getString("singerName"));
+            }
+        } catch (Exception e) {
+            
+        }
+    }
+    
+    public void connectDB(ArrayList<Model.Reserves> list) {
+        try {
+            Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:8889/PlayMusic", "root", "root");
+            Statement myStmt = myConn.createStatement();
+            ResultSet myRs = myStmt.executeQuery("SELECT S.singerName, M.musicName, R.location "
+                    + "FROM SingerData S, MusicData M, Reserves R "
+                    + "WHERE S.singerId = R.singerId AND M.musicId = R.musicId ");
+            while(myRs.next()) {
+//                System.out.println(myRs.getString("singerId") + ", " + myRs.getString("singerName"));
+                Model.Reserves r = new Model.Reserves(myRs.getString("musicName"), myRs.getString("singerName"), myRs.getString("location"), 268);
+                list.add(r);
             }
         } catch (Exception e) {
             

@@ -54,10 +54,20 @@ public class CustomPanel extends JPanel {
         g2.rotate(Math.toRadians(90));
         g2.setFont(new Font("Verdana", Font.PLAIN, 50));
         FontMetrics fm = g2.getFontMetrics();
-        Rectangle2D r = fm.getStringBounds(progress+"%", g);
+        int minute = progress / 60;
+        int seconds = progress - minute * 60;
+        String text = "";
+        if (minute < 10) {
+            if(seconds < 10) text = "0"+minute+":0"+seconds;
+            else text = "0"+minute+":"+seconds;
+        } else {
+            if(seconds < 10) text = +minute+":0"+seconds;
+            else text = minute+":"+seconds;
+        }
+        Rectangle2D r = fm.getStringBounds(text, g);
         int x = (0-(int)r.getWidth())/2;
         int y = (0-(int)r.getHeight())/2+fm.getAscent();
-        g2.drawString(progress+"%", x, y);
+        g2.drawString(text, x, y);
     }
     
 }
